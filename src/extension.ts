@@ -1,23 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-
-class MyHoverProvider implements vscode.HoverProvider {
-	provideHover(
-	  document: vscode.TextDocument,
-	  position: vscode.Position
-	): vscode.ProviderResult<vscode.Hover> {
-	  const range = document.getWordRangeAtPosition(position);
-	  if (!range) {
-		return null;
-	  }
-  
-	  const word = document.getText(range);
-	  const hoverText = `This is the hover content for "${word}".`;
-  
-	  return new vscode.Hover(hoverText);
-	}
-  }
+import { activate as forLoopHighlighterActivate } from './forLoopHighlighter';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -36,9 +20,10 @@ export function activate(context: vscode.ExtensionContext) {
 		const activeEditor = vscode.window.activeTextEditor;
 
 		const decoration = vscode.window.createTextEditorDecorationType({
-			backgroundColor: 'yellow',
-			border: '1px solid red',
-		  });
+			backgroundColor: 'orange',
+			opacity: '0.4',
+			// border: '1px solid red',
+		});
 
 		if (activeEditor) {
 			const text = activeEditor.document.getText();
@@ -47,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const matches: vscode.Range[] = [];
 			
 			let match;
-			while ((match = regex.exec(text))) {
+			while (match = regex.exec(text)) {
 				const startPos = activeEditor.document.positionAt(match.index);
 				const endPos = activeEditor.document.positionAt(match.index + match[0].length);
 				const decorationRange = new vscode.Range(startPos, endPos);
@@ -60,12 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
-	const hoverProvider = new MyHoverProvider();
-	const selector: vscode.DocumentSelector = { scheme: 'file' }; // specify the document selector here
-
-	context.subscriptions.push(
-		vscode.languages.registerHoverProvider(selector, hoverProvider)
-	); 
+	forLoopHighlighterActivate(context);
 }
 
 // This method is called when your extension is deactivated
